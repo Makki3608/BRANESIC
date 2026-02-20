@@ -2,11 +2,11 @@
 
 ## What ?
 
-<p>A compiler and higher-level programming language, compiling to '[Branefuck](https://github.com/skirlez/void-stranger-endless-void/wiki/Branefuck)', a modified version of '[Brainfuck](https://esolangs.org/wiki/Brainfuck)' for the level editor mod '[Endless Void](https://github.com/skirlez/void-stranger-endless-void)', for the game '[Void Stranger](https://en.wikipedia.org/wiki/Void_Stranger)'. Aren't hyperlinks fun ?</p>
+A compiler and higher-level programming language, compiling to '[Branefuck](https://github.com/skirlez/void-stranger-endless-void/wiki/Branefuck)', a modified version of '[Brainfuck](https://esolangs.org/wiki/Brainfuck)' for the level editor mod '[Endless Void](https://github.com/skirlez/void-stranger-endless-void)', for the game '[Void Stranger](https://en.wikipedia.org/wiki/Void_Stranger)'. Aren't hyperlinks fun ?
 
 ## Why ?
 
-<p>Because making a programming language is a programming rite of passage. Or so i've been told. And writing a C compiler is boring and too hard. Anyways, maybe this could be useful to anyone making [Endless Void](https://github.com/skirlez/void-stranger-endless-void) levels.</p>
+Because making a programming language is a programming rite of passage. Or so i've been told. And writing a C compiler is boring and too hard. Anyways, maybe this could be useful to anyone making [Endless Void](https://github.com/skirlez/void-stranger-endless-void) levels.
 
 ## How do I use it ?
 
