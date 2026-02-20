@@ -2,7 +2,7 @@
 
 ## What ?
 
-<p>A compiler and higher-level programming language, compiling to '(Branefuck)[https://github.com/skirlez/void-stranger-endless-void/wiki/Branefuck]', a modified version of '(Brainfuck)[https://esolangs.org/wiki/Brainfuck]' for the level editor mod '[Endless Void](https://github.com/skirlez/void-stranger-endless-void)', for the game '[Void Stranger](https://en.wikipedia.org/wiki/Void_Stranger)'. Aren't hyperlinks fun ?</p>
+<p>A compiler and higher-level programming language, compiling to '[Branefuck](https://github.com/skirlez/void-stranger-endless-void/wiki/Branefuck)', a modified version of '[Brainfuck](https://esolangs.org/wiki/Brainfuck)' for the level editor mod '[Endless Void](https://github.com/skirlez/void-stranger-endless-void)', for the game '[Void Stranger](https://en.wikipedia.org/wiki/Void_Stranger)'. Aren't hyperlinks fun ?</p>
 
 ## Why ?
 
