@@ -19,6 +19,7 @@ Okay I can't pyinstall to work I swear it worked before I need 2 go to bed.
 
 `git clone https://github.com/Makki3608/Branesic-Compiler.git`
 and run __main__.py
+(make sure you have python installed)
 
 ## How do I write something in this novel new programming language ?
 
