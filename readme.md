@@ -10,9 +10,10 @@ Because making a programming language is a programming rite of passage. Or so i'
 
 ## How do I use it ?
 
-### You can either:
+~~### You can either:~~
 
-Download the executable. Run it. ( Not recommended cus you can't modify Config or The Dictionaries. I know that's stupid. Working on that )
+~~Download the executable. Run it. ( Not recommended cus you can't modify Config or The Dictionaries. I know that's stupid. Working on that )~~
+Okay I can't pyinstall to work I swear it worked before I need 2 go to bed.
 
 ### Or you can:
 
