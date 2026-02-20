@@ -13,13 +13,12 @@ Because making a programming language is a programming rite of passage. Or so i'
 ~~### You can either:~~
 
 ~~Download the executable. Run it. ( Not recommended cus you can't modify Config or The Dictionaries. I know that's stupid. Working on that )~~
-Okay I can't pyinstall to work I swear it worked before I need 2 go to bed.
+
+Okay I can't get pyinstall to work I swear it worked before I need 2 go to bed.
 
 ### Or you can:
 
-`git clone https://github.com/Makki3608/Branesic-Compiler.git`
-and run __main__.py
-(make sure you have python installed)
+Find the release. Extract one of the zips. And run `__main__.py`.
 
 ## How do I write something in this novel new programming language ?
 
