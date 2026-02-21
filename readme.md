@@ -14,15 +14,22 @@ Because making a programming language is a programming rite of passage. Or so i'
 
 ~~Download the executable. Run it. ( Not recommended cus you can't modify Config or The Dictionaries. I know that's stupid. Working on that )~~
 
-Okay I can't get pyinstall to work I swear it worked before I need 2 go to bed.
-
 ### Or you can:
 
 Find the release. Extract one of the zips. And run `__main__.py`.
+Make sure you have Python installed.
 
 ## How do I write something in this novel new programming language ?
 
 Check the wiki :3
+
+## Compatibility ?
+
+<p>The one thing that i'm worried might not work across platforms is the file select popup. I've been told tkinter works everywhere, tho I can't test that claim because I don't have a Windows or Apple PC. ( Yes I am aware Apple doesn't want you to call it a Personal Compuer because they are evil and don't want you to own the thing you paid 5k for. )</p>
+
+## Disclaimer:
+
+<p>This is very unprofessional. I am not a professional. I code for fun like once a year whenever I get the divine visitation required to get me to set my mind on making something. So yeah, this is why it feels kind of scuffed. I don't know how people usually get their programs to not be so cumbersome to use. I'm pretty sure that's a secret they only teach you in university</p>
 
 ## TODO List
 
