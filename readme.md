@@ -32,6 +32,7 @@ Check the wiki :3
 - Somehow make config.py and bnf_dictionary.py into .json files so that you can just use the executable.
 - Add control logic things. ( If, else, while, etc statements ).
 - More ways to pass text thru the compiler ( I now what I means ).
+  - O(0) static +/-/== ?
 - Add persistent memory management.
 
 ### Tweaks
@@ -39,8 +40,13 @@ Check the wiki :3
 - Fix all the typos. 
 - Probably more testing.
 - Get pyinstall to work.
+- Fix `Get_neccessary_workspace_size()`
+- Fix # Actons not returning anything.
+- Add more useful !functions!
 
 ### QOL ideas
 
 - A preprocessing step that would put all the variable initialisations to the start so you can put them anywhere.
 - Copy output to clipboard automatically ?
+- Set `<r>` automatically.  
+- A preprocessing step that would use PEMDAS to turn something like `(x + y ^ 2 * (3 + 1))` to `(x + (y ^ (2 * (3 + 1))))`
