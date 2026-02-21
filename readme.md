@@ -35,7 +35,6 @@ Check the wiki :3
 
 ### The big ones
 
-- Write the wiki.
 - Somehow make config.py and bnf_dictionary.py into .json files so that you can just use the executable.
 - Add control logic things. ( If, else, while, etc statements ).
 - More ways to pass text thru the compiler ( I now what I means ).
