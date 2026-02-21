@@ -23,3 +23,24 @@ Find the release. Extract one of the zips. And run `__main__.py`.
 ## How do I write something in this novel new programming language ?
 
 Check the wiki :3
+
+## TODO List
+
+### The big ones
+
+- Write the wiki.
+- Somehow make config.py and bnf_dictionary.py into .json files so that you can just use the executable.
+- Add control logic things. ( If, else, while, etc statements ).
+- More ways to pass text thru the compiler ( I now what I means ).
+- Add persistent memory management.
+
+### Tweaks
+
+- Fix all the typos. 
+- Probably more testing.
+- Get pyinstall to work.
+
+### QOL ideas
+
+- A preprocessing step that would put all the variable initialisations to the start so you can put them anywhere.
+- Copy output to clipboard automatically ?
