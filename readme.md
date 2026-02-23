@@ -25,7 +25,7 @@ Check the wiki :3
 
 ## Compatibility ?
 
-<p>The one thing that i'm worried might not work across platforms is the file select popup. I've been told tkinter works everywhere, tho I can't test that claim because I don't have a Windows or Apple PC. ( Yes I am aware Apple doesn't want you to call it a Personal Compuer because they are evil and don't want you to own the thing you paid 5k for. )</p>
+<p>The one thing that i'm worried might not work across platforms is the file select popup and clipboard interaction. I've been told both Tkinter and Clipboard works everywhere, tho I can't test that claim because I don't have a Windows or Apple PC. If you do and it's not working, please make an issue.</p>
 
 ## Disclaimer:
 
@@ -51,6 +51,5 @@ Check the wiki :3
 ### QOL ideas
 
 - A preprocessing step that would put all the variable initialisations to the start so you can put them anywhere.
-- Copy output to clipboard automatically ?
 - Set `<r>` automatically.  
 - A preprocessing step that would use PEMDAS to turn something like `(x + y ^ 2 * (3 + 1))` to `(x + (y ^ (2 * (3 + 1))))`
