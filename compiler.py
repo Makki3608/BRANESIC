@@ -5,7 +5,7 @@ class Compiler_exception(Exception):
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
-class Variabe_defnition:
+class Variable_definition:
     def __init__(self, address: int, definition_branefuck: str, variable_name: str):
         global g_vars_size
         g_vars_size += 1
@@ -31,7 +31,7 @@ class Action:
         self.action_branefuck = self._Get_action_branefuck()
     def _Argument_definition_to_fetch_branefuck(self, argument_definition):
         if Is_integer(argument_definition) and argument_definition == "0": return ",t:0," 
-        elif Is_integer(argument_definition): return ",t:0,"+Intiger_string_to_branefuck_string(argument_definition)
+        elif Is_integer(argument_definition): return ",t:0,"+Integer_string_to_branefuck_string(argument_definition)
         elif (argument_definition[0] == "," and argument_definition[-1] == ",") or (argument_definition[0] == "'" and argument_definition[-1] == "'"):
             return argument_definition
         else: return f",t:{str(Variable_name_to_address(argument_definition))},"
@@ -71,12 +71,12 @@ class Action:
         
         return branefuck_building
     def _Validate_action(self, working):
-        if len(working) != 2: raise Compiler_exception("For some reason, you put 2 arrows in the Action definition.\n\n*Dissapointed pearent voice*\n\n That won't work...")
+        if len(working) != 2: raise Compiler_exception("For some reason, you put 2 arrows in the Action definition.\n\n*Disappointed pearent voice*\n\n That won't work...")
         if Is_integer(working[1]): raise(Compiler_exception(f"You cannot write the result of an action into a number. A {working[1]} will always be a {working[1]}"))
         if working[1] == "": raise(Compiler_exception("The destination cannot be empty.\nHint: Try 'VOID'"))
         found_destination = False
         for i in sorted_lines:
-            if type(i) == Variabe_defnition:
+            if type(i) == Variable_definition:
                 if i.variable_name == working[1]: found_destination = True
         if not found_destination and working[1] != "void": raise(Exception(f"Invalid destination !\n{working[1]}"))
     def __str__(self):
@@ -125,7 +125,7 @@ class Routing_definition:#if, else, elif, exit #big TODO
 
 def Variable_name_to_address(name):
     for l in sorted_lines:
-        if type(l) == Variabe_defnition:
+        if type(l) == Variable_definition:
             if l.variable_name == name: return l.address
 
 def Define_globals():
@@ -142,7 +142,7 @@ def Define_globals():
     global g_reserve_size
     g_reserve_size=0
     global g_workspace_size
-    g_workspace_size=Get_neccessary_workspace_size()
+    g_workspace_size=Get_necessary_workspace_size()
     global g_workspace_start
     g_workspace_start=2
     global branefuck_prefix
@@ -157,7 +157,7 @@ def Define_globals():
     symbol_list=[]
     for i in Function_Dictionary.keys(): function_list.append(i)
     for i in Symbol_Dictionary.keys():symbol_list.append(i)
-def Get_neccessary_workspace_size():
+def Get_necessary_workspace_size():
     biggest = 0
     for l in Function_Dictionary.values():
         if l.count(">") != l.count(">"): print(f"{l} contains a different number of '>' and '<' symbols...\nIt's a free country, you can do whatever you want.\n... I just hope you know what you're doing.")
@@ -181,17 +181,17 @@ def Do_something_i_dont_need_to_do_anymore_i_just_like_the_look_of_this_function
                 else: inside_number += i
             elif i == "_": inside = True
     return biggest_inside_number + 1
-def Intiger_string_to_branefuck_string(intiger_string):# "x" -> "+x", "-x" -> "-x"
-    if intiger_string.isnumeric(): return f"+{intiger_string}"
-    elif (not intiger_string.isnumeric()) and Is_integer(intiger_string): return intiger_string
-    else: raise(TypeError("Not an intiger string ???"))
+def Integer_string_to_branefuck_string(integer_string):# "x" -> "+x", "-x" -> "-x"
+    if integer_string.isnumeric(): return f"+{integer_string}"
+    elif (not integer_string.isnumeric()) and Is_integer(integer_string): return integer_string
+    else: raise(TypeError("Not an integer string ???"))
 def Format_line(line):
     line = line.replace(" ", "")
     line = line.replace("   ","")
     line = line.lower()
     return line
 def update_workspace():
-    global g_workspace_start #'reserve' also counts as vars appearently.
+    global g_workspace_start #'reserve' also counts as vars apparently.
     g_workspace_start = g_anchor_size + g_vars_size
 def Add_comments(working):
     lines = working.split("\n")
@@ -214,7 +214,7 @@ def Finalize():
     working = initial_branefuck + Prefix_Dictionary[g_prefix_id]
     if CONFIG["Line breaks between lines ?"] or CONFIG["Comment output ?"]: working += "\n"
     for l in sorted_lines:
-        if type(l) == Variabe_defnition:
+        if type(l) == Variable_definition:
             working += l.definition_branefuck
             working += ">"
         elif type(l) == Action:
@@ -241,7 +241,7 @@ def COMPILE(file_path):
                     global g_reserve_size
                     g_reserve_size = int(line[1])
                     for i in range(g_reserve_size):
-                        sorted_lines.append(Variabe_defnition(variable_address, definition_branefuck=f"", variable_name=f"RESERVE{i}"))
+                        sorted_lines.append(Variable_definition(variable_address, definition_branefuck=f"", variable_name=f"RESERVE{i}"))
                         variable_address += 1
                 elif line[0] == "w":
                     global g_workspace_size
@@ -251,7 +251,7 @@ def COMPILE(file_path):
                     global g_prefix_id
                     g_prefix_id = int(line[1])
 
-                else: raise Compiler_exception(f'Unknow parameter "{line[0]}" !')
+                else: raise Compiler_exception(f'Unknown parameter "{line[0]}" !')
     processed_text = []
     for i in in_text:
         line = Format_line(i)
@@ -265,7 +265,7 @@ def COMPILE(file_path):
             elif (not (line[1].isnumeric())) and (line[1][1:].isnumeric()) and (line[1][0] == "-"): definition_branefuck = line[1]#minus sign, number
             elif ((line[1][0] == "'" and line[1][-1] == "'") or (line[1][0] == "," and line[1][-1] == ",")) and ":" in line[1]: definition_branefuck = line[1]#period
             else: raise(Compiler_exception("Unrecognised variable definition"))
-            sorted_lines.append(Variabe_defnition(variable_address, definition_branefuck, variable_name=line[0]))
+            sorted_lines.append(Variable_definition(variable_address, definition_branefuck, variable_name=line[0]))
             variable_address += 1
         elif "->" in line:#action
             sorted_lines.append(Action(line, 0))

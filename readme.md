@@ -43,10 +43,9 @@ Check the wiki :3
 
 ### Tweaks
 
-- Fix all the typos. 
 - Probably more testing.
 - Get pyinstall to work.
-- Fix `Get_neccessary_workspace_size()`
+- Fix `Get_necessary_workspace_size()`
 - Fix # Actons not returning anything.
 - Add more useful !functions!
 

@@ -17,7 +17,7 @@ def main():
         output_path = ""
 
     if input_path == "": input_path = filedialog.askopenfilename(
-        title="Select BRANEFUCK file.",
+        title="Select BRANESIC file.",
         defaultextension=".brans",
     )
     output_text = ""
