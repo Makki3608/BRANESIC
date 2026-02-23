@@ -56,6 +56,7 @@ Function_Dictionary = {
     "!reset_palette!": ",t:0,+16777215>,t:0,+12632256>,t:0,+8421504>,t:0,#set_palette#",#to gray, sadly#
     "!save!": "_0_^v",#these let you save 1 number to persistent memory. A better way to do that is TODO. These will stay for simple tasks but they might break the new way ( maybe )
     "!load!": ">^<v",
+    "!boom!": ",t:0,+999999999.",#exits with nine 9s. Set destroy value to 999999999 for it to destroy iteslf. #TODO find a better way to do self-destruction.
 }
 
 #

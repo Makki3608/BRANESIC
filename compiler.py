@@ -24,7 +24,6 @@ class Action:
         self.definition_text = Unpack_brackets(definition_text)
         working = self.definition_text.split("->")
         working[0] = self._Handle_symbols(working[0])
-        print(self.definition_text)
         self._Validate_action(working)
         self.destination = working[1]
         self.arguments = working[0].split(",")[0:-1]
