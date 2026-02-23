@@ -11,7 +11,7 @@
 #
 #Starts on 'workspace' cell 0
 #
-#'Workspace' moight not be clean. If neccessary, overwrite cells with ,t:0,
+#'Workspace' moight not be clean. If necessary, overwrite cells with ,t:0,
 #
 #_x_ fetches input x (_0_, _1_, etc)
 #
@@ -27,8 +27,8 @@ Symbol_Dictionary = {
     "/":        "_1_>_0_#div#><<~2~",
     "*":        "_1_>_0_#mul#><<~2~",
     "%":        "_1_>_0_#mod#><<~2~",
-    "==":       "_0_>_0_>_1_#div#><<_1_#mod#<,t:0,+>>[<<,t:0,>>,t:0,]>-[<<<,t:0,>>>,t:0,]<<<", #TODO handle zeors !
-    "!=":       "_0_>_0_>_1_#div#><<_1_#mod#<,t:0,>>[<<+>>,t:0,]>-[<<<,t:0,+>>>,t:0,]<<<", #TODO handle zeors ! (basically all of them)
+    "==":       "_0_>_0_>_1_#div#><<_1_#mod#<,t:0,+>>[<<,t:0,>>,t:0,]>-[<<<,t:0,>>>,t:0,]<<<", #TODO handle zeros !
+    "!=":       "_0_>_0_>_1_#div#><<_1_#mod#<,t:0,>>[<<+>>,t:0,]>-[<<<,t:0,+>>>,t:0,]<<<", #TODO handle zeros ! (basically all of them)
     "<":        "_0_>_1_-#div#>?#abs#><<<~3~",
     ">":        "_1_>_0_-#div#>?#abs#><<<~3~",
     "<=":       "_0_>_1_#div#>?#abs#><<<~3~",
@@ -51,6 +51,7 @@ Symbol_Dictionary = {
 #
 
 Function_Dictionary = {
+    "!pass!": "",
     "!rgb!": ",t:0,+256>_2_#mul#_1_[->+<]~2~#mul#_0_[->+<]<~2~",
     "!reset_palette!": ",t:0,+16777215>,t:0,+12632256>,t:0,+8421504>,t:0,#set_palette#",#to gray, sadly#
     "!save!": "_0_^v",#these let you save 1 number to persistent memory. A better way to do that is TODO. These will stay for simple tasks but they might break the new way ( maybe )
@@ -62,7 +63,7 @@ Function_Dictionary = {
 #
 
 #
-#prefixes shoudl always leave the cells as they found them. They should always end at index 0.
+#prefixes should always leave the cells as they found them. They should always end at index 0.
 #
 Prefix_Dictionary = {
     0:  "",#nothing

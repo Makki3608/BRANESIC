@@ -36,10 +36,15 @@ Check the wiki :3
 ### The big ones
 
 - Somehow make config.py and bnf_dictionary.py into .json files so that you can just use the executable.
-- Add control logic things. ( If, else, while, etc statements ).
+- Elif, while statements.
+  - Logic wiki
+  - Test If, Else a lot more.
+    - After that, release 0.2 ???
 - More ways to pass text thru the compiler ( I now what I means ).
   - O(0) static +/-/== ?
 - Add persistent memory management.
+- Add arrays. Somehow.
+  - Strings would follow.
 
 ### Tweaks
 

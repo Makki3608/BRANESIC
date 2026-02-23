@@ -16,25 +16,21 @@ class Variable_definition:
             if self.variable_name == i.variable_name: raise(Compiler_exception(f'Attempted to define "{self.variable_name}", but "{self.variable_name}" already exists !'))
         update_workspace()
     def __str__(self):
-        return f"variable: {self.variable_name}, address: {self.address}"
+        return f"VAR: {self.variable_name}, address: {self.address}"
 class Action:
-    def __init__(self, definition_text: str, recursion_depth: int):
-        self.recursion_depth = recursion_depth
-        self.definition_text = self._Unpack_brackets(definition_text)
+    def __init__(self, definition_text: str):
+        self.definition_text = definition_text
+        #while "(" in definition_text:
+        self.definition_text = Unpack_brackets(definition_text)
         working = self.definition_text.split("->")
         working[0] = self._Handle_symbols(working[0])
+        print(self.definition_text)
         self._Validate_action(working)
         self.destination = working[1]
         self.arguments = working[0].split(",")[0:-1]
         if "" in self.arguments: raise(Compiler_exception("I know you know that looked wrong. two ',' with nothing between them. If you want to avoid this, use '''. (Upside-down comma)"))
         self.action_function = working[0].split(",")[-1]
         self.action_branefuck = self._Get_action_branefuck()
-    def _Argument_definition_to_fetch_branefuck(self, argument_definition):
-        if Is_integer(argument_definition) and argument_definition == "0": return ",t:0," 
-        elif Is_integer(argument_definition): return ",t:0,"+Integer_string_to_branefuck_string(argument_definition)
-        elif (argument_definition[0] == "," and argument_definition[-1] == ",") or (argument_definition[0] == "'" and argument_definition[-1] == "'"):
-            return argument_definition
-        else: return f",t:{str(Variable_name_to_address(argument_definition))},"
     def _Get_action_branefuck(self):
         branefuck_building = ""
         if self.action_function[0] == "#" and self.action_function[-1] == "#":
@@ -44,10 +40,10 @@ class Action:
                 if foo: branefuck_building += ">"
                 else: foo = True
                 branefuck_building += ",t:0,"
-                branefuck_building += self._Argument_definition_to_fetch_branefuck(l)
+                branefuck_building += Argument_definition_to_fetch_branefuck(l)
             branefuck_building += self.action_function #these should happen at the end of workspace
             for l in range(len(self.arguments) - 1): branefuck_building += "<"# we are on 0 now
-            branefuck_building += f"~{len(self.arguments)}~"# Get the result of # command to workspace 0
+            if self.destination != "void": branefuck_building += f",t:{g_workspace_start+len(self.arguments)},"# Get the result of # command to workspace 0
 
         elif not (self.action_function[0] == "#" and self.action_function[-1] == "#") and (self.action_function[0] == "!" and self.action_function[-1] == "!"): 
             branefuck_building += Function_Dictionary[self.action_function]#actions that want to happen at home
@@ -59,7 +55,7 @@ class Action:
             i=0
             while "_" in branefuck_building:
                 if len(self.arguments) == 0: break
-                branefuck_building = branefuck_building.replace(f"_{str(i)}_", self._Argument_definition_to_fetch_branefuck(self.arguments[i].replace("_", "UNDERSCORE")))
+                branefuck_building = branefuck_building.replace(f"_{str(i)}_", Argument_definition_to_fetch_branefuck(self.arguments[i].replace("_", "UNDERSCORE")))
                 i += 1
                 if i > 999: raise(Compiler_exception("There's a loose '_' somewhere. probably."))
             branefuck_building = branefuck_building.replace("UNDERSCORE", "_")
@@ -80,34 +76,10 @@ class Action:
         found_destination = False
         for i in sorted_lines:
             if type(i) == Variable_definition:
-                if i.variable_name == working[1]: found_destination = True
-        if not found_destination and working[1] != "void": raise(Exception(f"Invalid destination !\n{working[1]}"))
+                if i.variable_name == working[1] or working[1] == "void": found_destination = True
+        if not found_destination and working[1] != "void": raise(Compiler_exception(f"Invalid destination !\n{working[1]}"))
     def __str__(self):
-        return f"function: {str(self.arguments)} {self.action_function} -> {self.destination}"
-    def _Unpack_brackets(self, text):
-        if ("(" not in text) and (")" not in text): return text
-        if text.count("(") != text.count(")"): raise(Compiler_exception(f"Unmatched round brackets in action !\n{text}"))
-        start = 0
-        end = 0
-        depth = 0
-        for l in range(len(text)):
-            i = text[l]
-            if i == "(":
-                start = l
-                break
-        for l in range(len(text[start+1:])):
-            i = text[start+1:][l]
-            if i == "(": depth += 1
-            elif i == ")":
-                if depth > 0: depth -= 1
-                else:
-                    end = l + start + 1
-                    break
-        inside = text[start+1:end]
-        reserve_name = "RESERVE"+str(self.recursion_depth)
-        global sorted_lines
-        sorted_lines.append(Action(f"{inside}->{reserve_name}", self.recursion_depth + 1))#oh no recursion
-        return text.replace(f"({inside})", reserve_name, 1)   
+        return f"ACT: {str(self.arguments)} {self.action_function} -> {self.destination}"   
     def _Handle_symbols(self, left_side):
         symbol = ""
         for i in symbol_list:
@@ -122,9 +94,31 @@ class Action:
         if len(arguments) != 2: raise(Compiler_exception("Symbol actions need to have exactly 2 arguments. I did't think it's possible to get here but error handling go brr"))
         return (f"{arguments[0]},{arguments[1]},!{symbol}!")
               
-class Routing_definition:#if, else, elif, exit #big TODO
-    def __init__(self, routing_type: str):
-        self.routing_type = routing_type
+class Logic_definition:#if, while, end, exit
+    def __init__(self, logic_type: str, line: str):
+        self.logic_type = logic_type
+        self.line = line
+        self.logic_branefuck = ""
+        tail = self.line.replace(logic_type, "")
+        global logic_closure_stack # so basically a logic thing that 'indents' multiple lines will push the BF that needs to happen at the end. An end logic will pop. 
+        if "(" in tail and ")" in tail: tail = Unpack_brackets(tail)
+        self.argument = tail
+        match self.logic_type:
+            case   "if"   :
+                logic_closure_stack.append(",t:0,]")#push
+                self.logic_branefuck += Argument_definition_to_fetch_branefuck(tail)
+                if else_exists:
+                    distance_between = g_workspace_start - Variable_name_to_address("ELSERESERVE")
+                    for l in range(distance_between): self.logic_branefuck += "<"
+                    self.logic_branefuck += f",t:{g_workspace_start},"
+                    for l in range(distance_between): self.logic_branefuck += ">"
+                self.logic_branefuck += "["#If the thing we just fetched is zero, skip. Otherwise go inside. Will be closed by end logic.
+            case   "while":raise(Compiler_exception("While loops not implemented yet !!!"))
+            case   "end"  :
+                self.logic_branefuck += logic_closure_stack.pop()
+            case   "exit" :self.logic_branefuck += "."
+    def __str__(self):
+        return f"LOG: {self.logic_type} {self.argument}"
 
 def Variable_name_to_address(name):
     for l in sorted_lines:
@@ -132,7 +126,38 @@ def Variable_name_to_address(name):
             if l.variable_name == name: return l.address
     #Not found
     raise(Compiler_exception(f"Variable '{name}' is not defined."))
-
+def Argument_definition_to_fetch_branefuck(argument_definition):
+    if argument_definition == "void": argument_definition = "0"
+    if Is_integer(argument_definition) and argument_definition == "0": return ",t:0," 
+    elif Is_integer(argument_definition): return ",t:0,"+Integer_string_to_branefuck_string(argument_definition)
+    elif (argument_definition[0] == "," and argument_definition[-1] == ",") or (argument_definition[0] == "'" and argument_definition[-1] == "'"):return argument_definition
+    else: return f",t:{str(Variable_name_to_address(argument_definition))},"
+def Unpack_brackets(text):
+    global sorted_lines
+    global recursion_depth
+    if ("(" not in text) and (")" not in text): return text
+    if text.count("(") != text.count(")"): raise(Compiler_exception(f"Unmatched round brackets in action !\n{text}"))
+    start = 0
+    end = 0
+    depth = 0
+    for l in range(len(text)):
+        i = text[l]
+        if i == "(":
+            start = l
+            break
+    for l in range(len(text[start+1:])):
+        i = text[start+1:][l]
+        if i == "(": depth += 1
+        elif i == ")":
+            if depth > 0: depth -= 1
+            else:
+                end = l + start + 1
+                break
+    inside = text[start+1:end]
+    reserve_name = "RESERVE"+str(recursion_depth)
+    recursion_depth += 1
+    sorted_lines.append(Action(f"{inside}->{reserve_name}"))#oh no recursion
+    return Unpack_brackets(text.replace(f"({inside})", reserve_name, 1))
 def Define_globals():
     global g_prefix_id
     g_prefix_id = 0
@@ -152,6 +177,12 @@ def Define_globals():
     g_workspace_start=2
     global branefuck_prefix
     branefuck_prefix=0
+    global recursion_depth
+    recursion_depth=0
+    global else_exists
+    else_exists = False
+    global logic_closure_stack
+    logic_closure_stack=[]
     global Function_Dictionary
     for i in Symbol_Dictionary.items(): Function_Dictionary[f"!{i[0]}!"] = i[1]
     global function_list
@@ -193,6 +224,7 @@ def Integer_string_to_branefuck_string(integer_string):# "x" -> "+x", "-x" -> "-
 def Format_line(line):
     line = line.replace(" ", "")
     line = line.replace("   ","")
+    line = line.replace("`","'")
     line = line.lower()
     return line
 def update_workspace():
@@ -211,12 +243,11 @@ def Add_comments(working):
             lines[l] +=  " "
         lines[l] += str(sorted_lines[l])
         lines[l] += "\n"
-        #print(lines[l])
-    print("".join(lines))
     return "".join(lines)
         
 def Finalize():
     working = initial_branefuck + Prefix_Dictionary[g_prefix_id]
+    open_versus_close = 0
     if CONFIG["Line breaks between lines ?"] or CONFIG["Comment output ?"]: working += "\n"
     for l in sorted_lines:
         if type(l) == Variable_definition:
@@ -224,12 +255,20 @@ def Finalize():
             working += ">"
         elif type(l) == Action:
             working += l.action_branefuck
+        elif type(l) == Logic_definition:
+            match l.logic_type:
+                case "if": open_versus_close += 1
+                case "while": open_versus_close += 1
+                case "end": open_versus_close -= 1
+            working += l.logic_branefuck
         else: raise(Compiler_exception(f"{type(l)} not recognised."))
         if CONFIG["Line breaks between lines ?"] or CONFIG["Comment output ?"]: working += "\n"
+    if open_versus_close != 0: raise(Compiler_exception("Unmatched logic !"))
     if CONFIG["Comment output ?"]:working = Add_comments(working)
     working = working.replace("'",",")
     print(working)
     return working
+
 def COMPILE(file_path):
     Define_globals()
     if file_path == "": file_path = input("Give source file path:\n")
@@ -238,7 +277,9 @@ def COMPILE(file_path):
     in_text = in_text.splitlines()
     in_text = list(filter(None, in_text))
     variable_address= 0 + g_anchor_size
-    for line in in_text:#stage 1: set parameters
+    preprocessed_lines = []
+    for i in range(len(in_text)):#preprocessing
+        line = in_text[i]
         if line[0] == "<" and line[-1] == ">":#parameter
                 line = line[1:-1].split("=")
                 if len(line) != 2: raise Compiler_exception('Parameter definition must contain exactly 1 "=" symbol !')
@@ -255,13 +296,23 @@ def COMPILE(file_path):
                 elif line[0] == "p":
                     global g_prefix_id
                     g_prefix_id = int(line[1])
-
                 else: raise Compiler_exception(f'Unknown parameter "{line[0]}" !')
-    processed_text = []
-    for i in in_text:
-        line = Format_line(i)
-        if i[0] != "#": processed_text.append(line)
-    for line in processed_text:
+
+        else:
+            if line[0:4] == "elif": pass
+
+            if line == "else":
+                global else_exists
+                if not else_exists:
+                    sorted_lines.append(Variable_definition(variable_address,"","ELSERESERVE"))
+                    variable_address += 1
+                else_exists = True
+            preprocessed_lines.append(Format_line(line))
+        
+
+    for line in preprocessed_lines:
+        global recursion_depth
+        recursion_depth = 0
         if line[0] == "<" and line[-1] == ">":pass#ignore, already did this
         elif line[0:3] == "var":#variable definition
             line = line[3:].split("=")
@@ -273,24 +324,20 @@ def COMPILE(file_path):
             sorted_lines.append(Variable_definition(variable_address, definition_branefuck, variable_name=line[0]))
             variable_address += 1
         elif "->" in line:#action
-            sorted_lines.append(Action(line, 0))
-        elif line[0:3] == "if,":#if
-            pass
-        elif line[0:5] == "else:":#else
-            pass
-        elif line [0:5] == "elif(":#elif
-            pass
-        elif line == "exit":#exit
-            pass
-        elif line == "end":#end
-            pass
+            sorted_lines.append(Action(line))
+        elif line[0:2] == "if":
+            sorted_lines.append(Logic_definition("if", line))
+        elif line == "else":
+            sorted_lines.append(Logic_definition("if", "ifELSERESERVE"))
+            sorted_lines.append(Action("0,!pass!->ELSERESERVE"))
+        elif line [0:4] == "elif":
+            raise(Compiler_exception("Elif not implemented yet. Use else and if."))
+        elif line == "exit":
+            sorted_lines.append(Logic_definition("exit", line))
+        elif line == "end":
+            sorted_lines.append(Logic_definition("end", line))
+            if else_exists: sorted_lines.append(Action("notELSERESERVE->ELSERESERVE"))
         
         else: raise Compiler_exception(f"Unknown line !\n{line}")
-    
-    #for i in sorted_lines: print(i)
 
     return Finalize()
-
-#hello git hub
-
-#is this thing on ?

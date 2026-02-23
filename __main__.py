@@ -4,11 +4,14 @@ from tkinter import filedialog
 from pathlib import Path
 from config import CONFIG
 import clipboard
+import traceback
 
 
 def main():
     root = tk.Tk()
     root.withdraw()
+
+    if ("slef." in open("compiler.py", "r").read()):tk.messagebox.showwarning("slef.", "slef.")
 
     if not CONFIG["Ask for files ?"]:
         input_path = CONFIG["Default in file ?"]
@@ -27,7 +30,8 @@ def main():
         output_text = COMPILE(input_path)
     except Compiler_exception as e:
         tk.messagebox.showerror("Compilation error !",e)
-        print(str(type(e))+": "+str(e))
+        print(traceback.format_exc())
+        print("\n\n"+str(type(e))+": "+str(e))
         return "error"
     
     if output_path == "" and CONFIG["Output to file ?"]:
