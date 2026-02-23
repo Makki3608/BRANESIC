@@ -47,14 +47,15 @@ class Action:
                 branefuck_building += self._Argument_definition_to_fetch_branefuck(l)
             branefuck_building += self.action_function #these should happen at the end of workspace
             for l in range(len(self.arguments) - 1): branefuck_building += "<"# we are on 0 now
+            branefuck_building += f"~{len(self.arguments)}~"# Get the result of # command to workspace 0
 
-        if not (self.action_function[0] == "#" and self.action_function[-1] == "#") and (self.action_function[0] == "!" and self.action_function[-1] == "!"): 
+        elif not (self.action_function[0] == "#" and self.action_function[-1] == "#") and (self.action_function[0] == "!" and self.action_function[-1] == "!"): 
             branefuck_building += Function_Dictionary[self.action_function]#actions that want to happen at home
             i=0
             while "~" in branefuck_building:
                 branefuck_building = branefuck_building.replace(f"~{str(i)}~", f",t:{str(g_workspace_start+i)},")
                 i += 1
-                if i > 999: raise(Compiler_exception("There's a loose '~' somewhere. probably."))
+                if i > 999: raise(Compiler_exception("There's a loose '~' somewhere. Probably."))
             i=0
             while "_" in branefuck_building:
                 if len(self.arguments) == 0: break
@@ -62,6 +63,8 @@ class Action:
                 i += 1
                 if i > 999: raise(Compiler_exception("There's a loose '_' somewhere. probably."))
             branefuck_building = branefuck_building.replace("UNDERSCORE", "_")
+        else: raise(Compiler_exception(f"Action function not recognised:\n{self.action_function}"))
+        
 
         if self.destination != "void":
             distance_between = g_workspace_start - Variable_name_to_address(self.destination)
@@ -127,6 +130,8 @@ def Variable_name_to_address(name):
     for l in sorted_lines:
         if type(l) == Variable_definition:
             if l.variable_name == name: return l.address
+    #Not found
+    raise(Compiler_exception(f"Variable '{name}' is not defined."))
 
 def Define_globals():
     global g_prefix_id

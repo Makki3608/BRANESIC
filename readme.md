@@ -46,7 +46,6 @@ Check the wiki :3
 - Probably more testing.
 - Get pyinstall to work.
 - Fix `Get_necessary_workspace_size()`
-- Fix # Actons not returning anything.
 - Add more useful !functions!
 
 ### QOL ideas
