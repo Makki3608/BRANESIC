@@ -9,7 +9,7 @@ CONFIG = {
     "Comment output ?": False,
     "Line breaks between lines ?": True,
     #ACTUAL TECHNICAL OPTIONS YOU'D EXPECT A COMPILER TO HAVE
-    #.
+    "Show progress every:": 1,
     #.
     #.
     #tba TODO

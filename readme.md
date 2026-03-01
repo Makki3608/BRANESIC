@@ -52,6 +52,7 @@ Check the wiki :3
 - Get pyinstall to work.
 - Fix `Get_necessary_workspace_size()`
 - Add more useful !functions!
+- Update the wiki, functions list
 
 ### QOL ideas
 

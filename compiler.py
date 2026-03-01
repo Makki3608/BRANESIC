@@ -1,6 +1,7 @@
 from bnf_dictionary import Symbol_Dictionary, Function_Dictionary, Prefix_Dictionary
 from config import CONFIG
 import base64
+import time
 class Compiler_exception(Exception):
     def __init__(self, message: str):
         self.message = message
@@ -23,9 +24,10 @@ class Action:
         #while "(" in definition_text:
         self.definition_text = Unpack_brackets(definition_text)
         working = self.definition_text.split("->")
-        working[0] = self._Handle_symbols(working[0])
+        if "," not in working[0]: working[0] = self._Handle_symbols(working[0])
         self._Validate_action(working)
         self.destination = working[1]
+        if "," not in working[0] and Is_integer(working[0].split(",")[0]): working[0] += ",!pass!"
         self.arguments = working[0].split(",")[0:-1]
         if "" in self.arguments: raise(Compiler_exception("I know you know that looked wrong. two ',' with nothing between them. If you want to avoid this, use '''. (Upside-down comma)"))
         self.action_function = working[0].split(",")[-1]
@@ -45,7 +47,8 @@ class Action:
             if self.destination != "void": branefuck_building += f",t:{g_workspace_start+len(self.arguments)},"# Get the result of # command to workspace 0
 
         elif not (self.action_function[0] == "#" and self.action_function[-1] == "#") and (self.action_function[0] == "!" and self.action_function[-1] == "!"): 
-            branefuck_building += Function_Dictionary[self.action_function]#actions that want to happen at home
+            try: branefuck_building += Function_Dictionary[self.action_function]#actions that want to happen at home
+            except KeyError: raise(Compiler_exception(f"{self.action_function} is not defined."))
             i=0
             while "~" in branefuck_building:
                 branefuck_building = branefuck_building.replace(f"~{str(i)}~", f",t:{str(g_workspace_start+i)},")
@@ -91,9 +94,8 @@ class Action:
         if symbol == "not" and left_side[0:3] == "not": left_side = "void"+left_side
         arguments = left_side.split(symbol)
         if len(arguments) != 2: raise(Compiler_exception("Symbol actions need to have exactly 2 arguments. I did't think it's possible to get here but error handling go brr"))
-        return (f"{arguments[0]},{arguments[1]},!{symbol}!")
-              
-class Logic_definition:#if, while, end, exit
+        return (f"{arguments[0]},{arguments[1]},!{symbol}!")             
+class Logic_definition:#if, while, end, exit, ENDWHILE
     def __init__(self, logic_type: str, line: str):
         self.logic_type = logic_type
         self.line = line
@@ -103,19 +105,37 @@ class Logic_definition:#if, while, end, exit
         if "(" in tail and ")" in tail: tail = Unpack_brackets(tail)
         self.argument = tail
         match self.logic_type:
-            case   "if"   :
+            case   "if"    :
                 logic_closure_stack.append(",t:0,]")#push
-                self.logic_branefuck += Argument_definition_to_fetch_branefuck(tail)
+                self.logic_branefuck += Argument_definition_to_fetch_branefuck(self.argument)
                 if else_exists:
                     distance_between = g_workspace_start - Variable_name_to_address("ELSERESERVE")
                     for l in range(distance_between): self.logic_branefuck += "<"
                     self.logic_branefuck += f",t:{g_workspace_start},"
                     for l in range(distance_between): self.logic_branefuck += ">"
                 self.logic_branefuck += "["#If the thing we just fetched is zero, skip. Otherwise go inside. Will be closed by end logic.
-            case   "while":raise(Compiler_exception("While loops not implemented yet !!!"))
-            case   "end"  :
-                self.logic_branefuck += logic_closure_stack.pop()
-            case   "exit" :self.logic_branefuck += "."
+            case   "while" :
+                global recursion_depth
+                recursion_depth = 0
+                logic_closure_stack.append(lambda: Logic_definition("ENDWHILE", self.line.replace("while", "ENDWHILE")))#This isn't how you're supposed to use Lambdas. But it works.
+                self.logic_branefuck += Argument_definition_to_fetch_branefuck(self.argument)
+                self.logic_branefuck += "["#If the thing we just fetched is zero, skip. Otherwise go inside. Will be closed by end logic.
+            case   "end"   :
+                closure = logic_closure_stack.pop()
+                if type(closure) != list: closure = [closure]
+                for l in closure:
+                    match l:
+                        case str(): self.logic_branefuck += l
+                        case Action(): self.logic_branefuck += l.action_branefuck
+                        case Logic_definition():
+                            self.logic_branefuck += l.logic_branefuck + "asdf"
+                        case _:
+                            if type(lambda a: a) == type(l): self.logic_branefuck += l().logic_branefuck 
+                            else: raise(Compiler_exception(f"Unknown closure !\n{l}"))
+            case   "exit"  :self.logic_branefuck += "."
+            case "ENDWHILE":
+                self.logic_branefuck += Argument_definition_to_fetch_branefuck(self.argument)
+                self.logic_branefuck += "]"
     def __str__(self):
         return f"LOG: {self.logic_type} {self.argument}"
 
@@ -128,6 +148,8 @@ def Variable_name_to_address(name):
 def Argument_definition_to_fetch_branefuck(argument_definition):
     if argument_definition == "void": argument_definition = "0"
     if Is_integer(argument_definition) and argument_definition == "0": return ",t:0," 
+    elif Is_integer(argument_definition) and argument_definition == "1": return ',t:0,+'
+    elif Is_integer(argument_definition) and argument_definition == "-1": return ',t:0,-'
     elif Is_integer(argument_definition): return ",t:0,"+Integer_string_to_branefuck_string(argument_definition)
     elif (argument_definition[0] == "," and argument_definition[-1] == ",") or (argument_definition[0] == "'" and argument_definition[-1] == "'"):return argument_definition
     else: return f",t:{str(Variable_name_to_address(argument_definition))},"
@@ -155,11 +177,14 @@ def Unpack_brackets(text):
     inside = text[start+1:end]
     reserve_name = "RESERVE"+str(recursion_depth)
     recursion_depth += 1
-    sorted_lines.append(Action(f"{inside}->{reserve_name}"))#oh no recursion
+    if Is_integer(inside): sorted_lines.append(Action(f"{inside},!pass!->{reserve_name}"))
+    else: sorted_lines.append(Action(f"{inside}->{reserve_name}"))#oh no recursion
     return Unpack_brackets(text.replace(f"({inside})", reserve_name, 1))
 def Define_globals():
     global g_prefix_id
     g_prefix_id = 0
+    global lastTime
+    lastTime = time.time()
     global initial_branefuck
     initial_branefuck = ">"
     global g_anchor_size
@@ -243,7 +268,13 @@ def Add_comments(working):
         lines[l] += str(sorted_lines[l])
         lines[l] += "\n"
     return "".join(lines)
-        
+def Get_Delta_Time():
+    global lastTime
+    currentTime = time.time()
+    deltaT = currentTime - lastTime
+    lastTime = currentTime
+    return deltaT
+
 def Finalize():
     working = initial_branefuck + Prefix_Dictionary[g_prefix_id]
     open_versus_close = 0
@@ -263,9 +294,9 @@ def Finalize():
         else: raise(Compiler_exception(f"{type(l)} not recognised."))
         if CONFIG["Line breaks between lines ?"] or CONFIG["Comment output ?"]: working += "\n"
     if open_versus_close != 0: raise(Compiler_exception("Unmatched logic !"))
+    working = working.replace("'",",").replace(",t:0,,t:0,", ",t:0,").replace("+0", "")
     if CONFIG["Comment output ?"]:working = Add_comments(working)
-    working = working.replace("'",",")
-    print(working)
+    #print(working)
     return working
 
 def COMPILE(file_path):
@@ -274,11 +305,14 @@ def COMPILE(file_path):
     in_file = open(file_path)
     in_text = in_file.read()
     in_text = in_text.splitlines()
+    numberOfLines = len(in_text)
+    print(f"Number of lines: {numberOfLines}")
     in_text = list(filter(None, in_text))
     variable_address= 0 + g_anchor_size
     preprocessed_lines = []
     for i in range(len(in_text)):#preprocessing
-        line = in_text[i]
+        line = Format_line(in_text[i])
+        if line.endswith("#") or line.endswith("!"): line += "->void"
         if line[0] == "<" and line[-1] == ">":#parameter
                 line = line[1:-1].split("=")
                 if len(line) != 2: raise Compiler_exception('Parameter definition must contain exactly 1 "=" symbol !')
@@ -306,20 +340,22 @@ def COMPILE(file_path):
                     sorted_lines.append(Variable_definition(variable_address,"","ELSERESERVE"))
                     variable_address += 1
                 else_exists = True
-            preprocessed_lines.append(Format_line(line))
+            if not line.count("#") & 1: preprocessed_lines.append(line)
         
 
+    linesDone = 0
+    showProgressEvery = CONFIG["Show progress every:"]
     for line in preprocessed_lines:
+        if not(linesDone % showProgressEvery):
+            print(f"{str(linesDone / numberOfLines * 100)[:6]}% {str(Get_Delta_Time())[:5]}s")
+        linesDone += 1
         global recursion_depth
         recursion_depth = 0
         if line[0] == "<" and line[-1] == ">":pass#ignore, already did this
         elif line[0:3] == "var":#variable definition
             line = line[3:].split("=")
             if len(line) != 2: raise Compiler_exception('Variable definition must contain exactly 1 "=" sign !')
-            if line[1].isnumeric(): definition_branefuck = "+"+line[1]#just a number
-            elif (not (line[1].isnumeric())) and (line[1][1:].isnumeric()) and (line[1][0] == "-"): definition_branefuck = line[1]#minus sign, number
-            elif ((line[1][0] == "'" and line[1][-1] == "'") or (line[1][0] == "," and line[1][-1] == ",")) and ":" in line[1]: definition_branefuck = line[1]#period
-            else: raise(Compiler_exception("Unrecognised variable definition"))
+            definition_branefuck = Argument_definition_to_fetch_branefuck(line[1])
             sorted_lines.append(Variable_definition(variable_address, definition_branefuck, variable_name=line[0]))
             variable_address += 1
         elif "->" in line:#action
@@ -331,6 +367,8 @@ def COMPILE(file_path):
             sorted_lines.append(Action("0,!pass!->ELSERESERVE"))
         elif line [0:4] == "elif":
             raise(Compiler_exception("Elif not implemented yet. Use else and if."))
+        elif line [0:5] == "while":
+            sorted_lines.append(Logic_definition("while", line))
         elif line == "exit":
             sorted_lines.append(Logic_definition("exit", line))
         elif line == "end":
